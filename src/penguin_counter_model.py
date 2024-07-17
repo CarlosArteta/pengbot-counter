@@ -10,37 +10,40 @@ class PenguinCounterNet(nn.Module):
     def __init__(self):
         super(PenguinCounterNet, self).__init__()
         self.avg_image = np.empty([])
+        self.density_multiplier = 1e4
+        self.segmentation_th = 0.95
+        self.horizontal_edge_remove = 30
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu1_1 = nn.ReLU()
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu1_2 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(0, 0), dilation=1, ceil_mode=True)
+        self.pool1 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(1, 1), dilation=1, ceil_mode=True)
         self.conv2_1 = nn.Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu2_1 = nn.ReLU()
         self.conv2_2 = nn.Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu2_2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(0, 0), dilation=1, ceil_mode=True)
+        self.pool2 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(1, 1), dilation=1, ceil_mode=True)
         self.conv3_1 = nn.Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu3_1 = nn.ReLU()
         self.conv3_2 = nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu3_2 = nn.ReLU()
         self.conv3_3 = nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu3_3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(0, 0), dilation=1, ceil_mode=True)
+        self.pool3 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(1, 1), dilation=1, ceil_mode=True)
         self.conv4_1 = nn.Conv2d(256, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu4_1 = nn.ReLU()
         self.conv4_2 = nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu4_2 = nn.ReLU()
         self.conv4_3 = nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu4_3 = nn.ReLU()
-        self.pool4 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(0, 0), dilation=1, ceil_mode=True)
+        self.pool4 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(1, 1), dilation=1, ceil_mode=True)
         self.conv5_1 = nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu5_1 = nn.ReLU()
         self.conv5_2 = nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu5_2 = nn.ReLU()
         self.conv5_3 = nn.Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu5_3 = nn.ReLU()
-        self.pool5 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(0, 0), dilation=1, ceil_mode=True)
+        self.pool5 = nn.MaxPool2d(kernel_size=[2, 2], stride=[2, 2], padding=(1, 1), dilation=1, ceil_mode=True)
         self.fc6 = nn.Conv2d(512, 4096, kernel_size=(7, 7), stride=(1, 1), padding=(3, 3))
         self.relu6 = nn.ReLU()
         self.fc7 = nn.Conv2d(4096, 4096, kernel_size=(1, 1), stride=(1, 1))
@@ -57,6 +60,7 @@ class PenguinCounterNet(nn.Module):
         self.deconv8_l = nn.ConvTranspose2d(1, 1, kernel_size=(16, 16), stride=(8, 8), bias=False)
 
     def forward(self, input):
+        input = input[:, self.horizontal_edge_remove:-self.horizontal_edge_remove, :]
         x1 = self.conv1_1(input)
         x2 = self.relu1_1(x1)
         x3 = self.conv1_2(x2)
@@ -108,6 +112,12 @@ class PenguinCounterNet(nn.Module):
         x44_l = torch.add(x43, tvt.functional.center_crop(x42_l, x43.size()[1:]))
         prediction_l = self.deconv8_l(x44_l)
         prediction_l = tvt.functional.center_crop(prediction_l, input.size()[1:])
+        prediction_s = prediction_s > self.segmentation_th
+        # set prediction_s to 0 on the top and bottom of the image an amount of self.horizontal_edge_remove pixels
+        prediction_s = tvt.functional.pad(prediction_s, (0, self.horizontal_edge_remove))
+        prediction_l = tvt.functional.pad(prediction_l, (0, self.horizontal_edge_remove))
+        # set density 0 outside the segmentation, and rescale density map
+        prediction_l = prediction_l * prediction_s / self.density_multiplier
         return prediction_s, prediction_l
 
 def penguinCounterNet(weights_path, avg_image_path):
