@@ -1,13 +1,15 @@
 import torch
 import torch.nn as nn
+import torchvision.transforms as tvt
 from scipy.io import loadmat
+import numpy as np
 
 
 class PenguinCounterNet(nn.Module):
 
     def __init__(self):
         super(PenguinCounterNet, self).__init__()
-        self.avg_image = torch.empty([])
+        self.avg_image = np.empty([])
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu1_1 = nn.ReLU()
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
@@ -93,18 +95,19 @@ class PenguinCounterNet(nn.Module):
         x38 = self.fc8(x36)
         x39 = self.deconv2(x38)
         x40 = self.skip4(x24)
-        x41 = torch.add(x39, 1, x40)
+        x41 = torch.add(x40, tvt.functional.center_crop(x39, x40.size()[1:]))
         x42 = self.deconv2bis(x41)
         x43 = self.skip3(x17)
-        x44 = torch.add(x42, 1, x43)
+        x44 = torch.add(x43, tvt.functional.center_crop(x42, x43.size()[1:]))
         prediction_s = self.deconv8(x44)
+        prediction_s = tvt.functional.center_crop(prediction_s, input.size()[1:])
         x38_l = self.fc8_l(x36)
         x39_l = self.deconv2_l(x38_l)
-        x41_l = torch.add(x39_l, 1, x40)
+        x41_l = torch.add(x40, tvt.functional.center_crop(x39_l, x40.size()[1:]))
         x42_l = self.deconv2bis_l(x41_l)
-        x44_l = torch.add(x42_l, 1, x43)
-        prediction_l_preflatten = self.deconv8_l(x44_l)
-        prediction_l = prediction_l_preflatten.view(prediction_l_preflatten.size(0), -1)
+        x44_l = torch.add(x43, tvt.functional.center_crop(x42_l, x43.size()[1:]))
+        prediction_l = self.deconv8_l(x44_l)
+        prediction_l = tvt.functional.center_crop(prediction_l, input.size()[1:])
         return prediction_s, prediction_l
 
 def penguinCounterNet(weights_path, avg_image_path):
@@ -119,6 +122,6 @@ def penguinCounterNet(weights_path, avg_image_path):
     state_dict = torch.load(weights_path)
     model.load_state_dict(state_dict)
     avg_im = loadmat(avg_image_path)
-    model.avg_image = torch.tensor(avg_im['avg_image'])
+    model.avg_image = np.array(avg_im['average_image'], dtype=np.float32).transpose(2, 0, 1)
 
     return model
