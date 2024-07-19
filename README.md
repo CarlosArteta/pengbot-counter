@@ -16,11 +16,13 @@ python3 -m venv venv_pengbot_counter
 Install the package
 ```
 source venv_pengbot_counter/source/bin/activate
+pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu118
 pip install .
 ```
 
 (Optional) Run tests
 ```
+pip install pytest
 pytest 
 ```
 
