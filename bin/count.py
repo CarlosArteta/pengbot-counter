@@ -15,7 +15,7 @@ def parse_cli_args():
         '--config',
         type=str,
         required=True,
-        help='YAML file with the required paths'
+        help='YAML configuration file'
     )
 
     config_arg = parser.parse_args()
@@ -50,3 +50,7 @@ def main():
         image_extension=config['image_extension'], 
         output_folder_suffix=config['output_folder_suffix']
     )
+
+
+if __name__ == '__main__':
+    main()
