@@ -79,4 +79,4 @@ class FolderProcessor:
         with torch.inference_mode():
             _, pred_density = self.model(im)
 
-        return pred_density.detach().cpu().numpy()
+        return pred_density.detach().cpu().numpy().astype(np.float16)
