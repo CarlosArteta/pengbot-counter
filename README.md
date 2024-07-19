@@ -22,8 +22,8 @@ pip install .
 
 Download model
 ```
-wget https://drive.google.com/file/d/1Qi-EuqGNiQ9WKpXXFpET6wGLCM9bZagX/view?usp=sharing
-wget https://drive.google.com/file/d/1Qi-EuqGNiQ9WKpXXFpET6wGLCM9bZagX/view?usp=sharing
+https://drive.google.com/file/d/1Qi-EuqGNiQ9WKpXXFpET6wGLCM9bZagX/view?usp=sharing
+https://drive.google.com/file/d/1n74wK0yq8p7_GBTMM1KvnKUFuUsUzf5G/view?usp=sharing
 ```
 
 (Optional) Run tests
