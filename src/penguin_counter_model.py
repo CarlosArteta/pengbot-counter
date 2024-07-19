@@ -7,12 +7,15 @@ import numpy as np
 
 class PenguinCounterNet(nn.Module):
 
-    def __init__(self):
+    def __init__(self, model_path, average_image_path, device='cpu'):
         super(PenguinCounterNet, self).__init__()
-        self.avg_image = np.empty([])
+        self.average_image = np.empty([])
         self.density_multiplier = 1e4
         self.segmentation_th = 0.95
         self.horizontal_edge_remove = 30
+        self.device = device
+        self.model_path = model_path
+        self.average_image_path = average_image_path
         self.conv1_1 = nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
         self.relu1_1 = nn.ReLU()
         self.conv1_2 = nn.Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
@@ -120,18 +123,19 @@ class PenguinCounterNet(nn.Module):
         prediction_l = prediction_l * prediction_s / self.density_multiplier
         return prediction_s, prediction_l
 
-def penguinCounterNet(weights_path, avg_image_path):
+def penguinCounterNet(model_path, average_image_path, device='cpu'):
     """
     load imported model instance
 
     Args:
-        weights_path (str): path to model weights
+        model_path (str): path to model weights
         avg_image_path (str): path to average image used for normalization
     """
-    model = PenguinCounterNet()
-    state_dict = torch.load(weights_path)
+    model = PenguinCounterNet(model_path, average_image_path, device)
+    state_dict = torch.load(model_path)
     model.load_state_dict(state_dict)
-    avg_im = loadmat(avg_image_path)
-    model.avg_image = np.array(avg_im['average_image'], dtype=np.float32).transpose(2, 0, 1)
+    average_image = loadmat(average_image_path)
+    model = model.to(device)
+    model.average_image = np.array(average_image['average_image'], dtype=np.float32).transpose(2, 0, 1)
 
     return model
