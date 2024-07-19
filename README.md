@@ -20,6 +20,12 @@ pip install torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorc
 pip install .
 ```
 
+Download model
+```
+wget https://drive.google.com/file/d/1Qi-EuqGNiQ9WKpXXFpET6wGLCM9bZagX/view?usp=sharing
+wget https://drive.google.com/file/d/1Qi-EuqGNiQ9WKpXXFpET6wGLCM9bZagX/view?usp=sharing
+```
+
 (Optional) Run tests
 ```
 pip install pytest
