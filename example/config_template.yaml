@@ -1,0 +1,12 @@
+# pengbot-counter config file template
+
+# Counting model
+model_path: '' # e.g. 'C:\\Users\\user\\pengbot-counter\\static\\penguinCounterNetReduced.pth'
+device: 'cuda' # 'cuda' or 'cpu
+average_image_path: '' # e.g. 'C:\\Users\\user\\pengbot-counter\\static\\penguinCounterAvgIm.mat'
+
+# Input data
+input_data_path: '' # e.g. 'C:\\Users\\user\\penguins\\LOCKa_samples'
+image_extension: 'JPG'
+output_folder_suffix: '_count'
+
