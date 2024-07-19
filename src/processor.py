@@ -59,7 +59,7 @@ class FolderProcessor:
                 [output_df if not output_df.empty else None, pd.DataFrame({'image': image_path.name, 'count': count}, index=[0])], 
                 ).reset_index(drop=True)
             scipy.io.savemat(output_density_path, {'density': pred_density.squeeze()})
-        output_df.to_csv(output_csv_path, index=False)
+            output_df.to_csv(output_csv_path, index=False)
     
     def process_image(self, image_path):
         """
