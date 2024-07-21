@@ -58,7 +58,7 @@ class FolderProcessor:
             output_df = pd.concat(
                 [output_df if not output_df.empty else None, pd.DataFrame({'image': image_path.name, 'count': count}, index=[0])], 
                 ).reset_index(drop=True)
-            scipy.io.savemat(output_density_path, {'density': pred_density.squeeze()})
+            scipy.io.savemat(output_density_path, {'density': pred_density.squeeze()}, do_compression=True)
             output_df.to_csv(output_csv_path, index=False)
     
     def process_image(self, image_path):
@@ -79,4 +79,4 @@ class FolderProcessor:
         with torch.inference_mode():
             _, pred_density = self.model(im)
 
-        return pred_density.detach().cpu().numpy().astype(np.float16)
+        return pred_density.detach().cpu().numpy()
